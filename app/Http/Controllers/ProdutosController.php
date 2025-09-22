@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 class ProdutosController extends Controller
 {
+    
     /**
      * Display a listing of the resource.
      */
@@ -21,7 +22,7 @@ class ProdutosController extends Controller
      */
     public function create()
     {
-        //
+        return view('cadastrarproduto');
     }
 
     /**
@@ -29,25 +30,51 @@ class ProdutosController extends Controller
      */
     public function store(Request $request)
     {
-        $produto = new Produto();
+        if(
+            $request->input('nome')!="" &&
+            $request->input('preco')!=""&&
+            $request->input('marca')!=""&&
+            $request->input('qtd')!=""
+        ){
+            $produto = new Produto();
+            $produto->nome = $request->input('nome');
+            $produto->preco = $request->input('preco');
+            $produto->marca = $request->input('marca');
+            $produto->quantidade = $request->input('qtd');
+            $produto->descricao = $request->input('desc');
+            //verifico se existe
+            if ($request->hasFile('img')&&$request->file('img')->isvalid()){
+                //pegar a img na request
+                $requestimg = $request->file('img');
+                //pegar extensao
+                $extensao = $requestimg->extension();
+                //renomear, hashmap md5 passando o nome da img e concatenando com o momento atual e a extensão do arquivo
+                $novoNome = md5($requestimg->getClientOriginalName(). strtotime('now'). ".". $extensao);
+                //baixa o arquivo em img-produtos, local de envio e nome
+                $requestimg->move(public_path('img-produtos'), $novoNome);
+                //guardadno o caminho da imagem no model
+                $produto->imagem = "img-produtos/".$novoNome;
 
-        $produto->nome=$request->nome;
-        $produto->preco=$request->preco;
-        $produto->marca=$request->marca;
-        $produto->quantidade=$request->qtd;
-        $produto->save(); 
+            }
+            $produto->save();
+        }
+        return redirect('estoque');
         
-        return redirect()->route('estoque')->with('msg', "Produto adiconado com sucesso!");
+
+        
+        
+
+
 
     }
 
     /**
      * Display the specified resource.
      */
-    public function show( $cod_produto)
+    public function show(string $id)
     {
-
-
+        $produto = Produto::find($id);
+        return view('verproduto', ['produto'=>$produto]);
     }
 
     /**
@@ -69,8 +96,10 @@ class ProdutosController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Produto $produto)
     {
-
+        unlink($produto->imagem);
+        $produto->delete();
+        return redirect('estoque');
     }
 }
