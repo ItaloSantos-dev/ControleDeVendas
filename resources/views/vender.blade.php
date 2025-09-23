@@ -9,14 +9,23 @@
     <style>
         #carrinho{
             max-height: 50vh;
+
         }
         #limpar{
             left: 93%;
+        }
+        #confirmar{
+            max-width: 60vw;
+            left: -50%;
+            transition-duration: 0.5s ;
+            
+            
         }
     </style>
 </head>
 <body>
     <a href="/">Voltar</a>
+    <!-- Headeer -->
     <div class="container position-relative text-center border rounded p-3">
         <form id="limpar" class=" mt-2 translate-middle position-absolute" action="{{route('vendas.limparcarrinho')}}" method="post">
             @csrf
@@ -25,11 +34,13 @@
         <h1>Carrinho</h1>
         <div class="row">
             <div class="col">
-                @if(session()->has('error'))
-                    <h2 class=" text-danger">{{session('error')}}</h2>
+                @if(session()->has('aviso'))
+                    <h2 class=" text-danger">{{session('aviso')}}</h2>
                  @endif
             </div>
         </div>
+        <!-- Form de adicionar os itens no carrinho -->
+
         <form action="{{route('vendas.addcarrinho')}}" method="post">
             @csrf
             <div class="row">
@@ -47,7 +58,7 @@
         </form> 
     </div>
 
-
+    <!-- Carrinho com os itens -->
     <div id="carrinho" class="container border ">
         @if(session()->has('carrinho'))
             @foreach(session('carrinho') as $id=>$item)
@@ -64,18 +75,73 @@
             @endforeach
         @endif
     </div>
-    @if(session()->has('valorfinaldacompra'))
-        <div class="container">
-            <div class="row rounded border shadow mt-2">
+
+    <!-- Footer -->
+    <div class="container">
+        <div class="row rounded border shadow mt-2">
+            <div class="col">
+                Valor total: R${{session('valorfinaldacompra')??0}}
+                </div>
+            <button onclick="mostrartela(1)"class="btn btn-primary col">Concluir venda</button>
+        </div>
+    </div>
+    
+    <!-- Confirmação do pagamento -->
+
+    <form action="{{route('vendas.store')}}" method="post">
+        @csrf
+        <div id="confirmar" class="container rounded shadow border p-3 bg-light text-center translate-middle position-absolute top-50">
+            <div class="row border p-2">
+                <h2>Valor Final:R$ {{session('valorfinaldacompra')??0}}</h2>
+                <h3>Forma de pagamento</h3>
+            </div>
+
+            <div class="row mt-2">
                 <div class="col">
-                    Valor total: {{session('valorfinaldacompra')}}
+                    <label class=" btn btn-primary" for="pix">PIX</label> <br>
+                    <input onfocus="liberarConfirmar()" value="pix" type="radio" name="forma" id="pix">
+                </div>
+                <div class="col">
+                    <label class=" btn btn-primary" for="debito">Débito</label><br>
+                    <input onfocus="liberarConfirmar()" value="debito" type="radio" name="forma" id="debito">
+                </div>
+                <div class="col">
+                    <label class=" btn btn-primary" for="credito">Crédito</label><br>
+                    <input onfocus="liberarConfirmar()" value="credito" type="radio" name="forma" id="credito">
+                </div>
+                <div class="col">
+                    <label class=" btn btn-primary" for="especie">Espécie</label><br>
+                    <input onfocus="liberarConfirmar()" value="dinheiro" type="radio" name="forma" id="especie">
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col">
+                    <input type="submit" id="btnconfirmar" disabled {{session('liberarbtnconfirmar')?'':'disabled'}} value="Confirmar" class="btn btn-success">
+                </div>
+                <div class="col">
+                    <button onclick="mostrartela(0)" type="button" class="btn btn-danger">Cancelar</button>
                 </div>
             </div>
         </div>
-    @endif
+    </form>
 
 
 
+    <script>
+        function mostrartela(acao){
+            let div = document.getElementById('confirmar');
+            if(acao==1){
+            div.style.left = "50%";
+            }
+            else{
+            div.style.left = "-50%";
+            }
+        }
 
+        function liberarConfirmar(){
+            let input = document.getElementById('btnconfirmar');
+            input.disabled=false;
+        }
+    </script>
 </body>
 </html>

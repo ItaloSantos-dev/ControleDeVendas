@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produto;
+use App\Models\Venda;
+use Carbon\Carbon;
 use GuzzleHttp\Handler\Proxy;
 use Illuminate\Http\Request;
 
@@ -10,6 +12,8 @@ class VendasController extends Controller
 {
     public function exibirTela(){
         return view('vender');
+               
+
     }
     public function addCarrinho(Request $request){
         if($request->input('id')!=""&&$request->input('qtd')!=""){
@@ -19,7 +23,8 @@ class VendasController extends Controller
             //verifica se o produto buscado foi encontrado no bd
             if($produtoBuscado){
                $carrinho = session('carrinho', []);
-               $valorfinaldacompra = session('valorfinaldacompra', 0);
+                $valorfinaldacompra = session('valorfinaldacompra', 0);
+
 
                //verifica se o item ja esta no carrinho
                if(isset($carrinho[$id])){
@@ -45,12 +50,12 @@ class VendasController extends Controller
  
             }
             else{
-                return redirect('vender')->with('error', 'O produto não foi encontrado');
+                return redirect('vender')->with('aviso', 'O produto não foi encontrado');
             }
             
         }
         else{
-            return redirect('vender')->with('error', 'Um dos campos está inválido');
+            return redirect('vender')->with('aviso', 'Um dos campos está inválido');
         }
     }
 
@@ -79,7 +84,7 @@ class VendasController extends Controller
 
         }
         else{
-            return redirect('vender')->with('error', 'O carrinho não possui itens');
+            return redirect('vender')->with('aviso', 'O carrinho não possui itens');
         }
         
 
@@ -90,7 +95,8 @@ class VendasController extends Controller
      */
     public function index()
     {
-        //
+        $vendas = Venda::all();
+        return view('vervendas', ['vendas'=>$vendas]);
     }
 
     /**
@@ -106,7 +112,25 @@ class VendasController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $venda = new Venda();
+        $venda->momento = Carbon::now();
+        $venda->valor =(int) session('valorfinaldacompra');
+        $venda->forma = $request->input('forma');
+        if(
+            $venda->momento!=""&&
+            $venda->valor>0&&
+            $venda->forma!=""
+        ){
+            $venda->save();
+            session()->flush();
+            return redirect('vender')->with('aviso', 'Venda realizada com sucesso');
+        }
+        else{
+            return redirect('vender')->with('aviso', 'Complete todos os campos');
+
+        }
+
+
     }
 
     /**

@@ -13,10 +13,12 @@ Route::get('/', function(){
 });
 
 Route::get('/vender', [VendasController::class, 'exibirTela'])->name('vendas.exibirtela');
-Route::post('/vender', [VendasController::class, 'addCarrinho'])->name('vendas.addcarrinho');
+Route::post('/vender/addcarrinho', [VendasController::class, 'addCarrinho'])->name('vendas.addcarrinho');
 Route::post('/vender/limparcarrinho', [VendasController::class, 'limparCarrinho'])->name('vendas.limparcarrinho');
-
+Route::post('/vender/confirmarvenda',[VendasController::class, 'store'])->name('vendas.store');
 Route::post('/vender/remover/{id}', [VendasController::class, 'removerDoCarrinho'])->name('vendas.removerdocarrinho');
+Route::get('/vervendas', [VendasController::class, 'index'])->name('vendas.index');
+
 
 
 Route::get('/estoque', [ProdutosController::class, 'index'])->name('produtos.index');
